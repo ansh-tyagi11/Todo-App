@@ -45,6 +45,7 @@ All data is stored in **localStorage**, so your tasks will remain even after ref
 3. Install dependencies:
    ```bash
    npm install
+   npm install uuid
    ```
 
 4. Start the development server:

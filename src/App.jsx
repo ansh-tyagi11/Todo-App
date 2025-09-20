@@ -16,51 +16,53 @@ function App() {
     focus.current.focus()
   }, [todo])
 
-
-  const saveToLS = () => {
-    localStorage.setItem("setTodos", JSON.stringify(todos))
-  }
+  const saveToLS = (todoArray) => {
+    localStorage.setItem("todos", JSON.stringify(todoArray));
+  };
 
   useEffect(() => {
-    let todos = JSON.parse(localStorage.getItem("todos"))
-    setTodos(todos)
-  }, [])
-
-  const add = () => {
-    setTodos([...todos, { id: uuidv4(), todo, isCompleted: false }])
-    setTodo("")
-    saveToLS()
-  }
-
-  const deleteEvent = (_, id) => {
-    let newtodos = todos.filter(item => {
-      return item.id !== id
-    });
-    setTodos(newtodos)
-  }
-
-  const editEvent = (_, id) => {
-    let edit = todos.filter(item => {
-      return item.id === id
-    })
-    deleteEvent(edit, id)
-    setTodo(edit[0].todo)
-    // saveToLS()
-  }
-
-  const isCompleted = (_, id) => {
-    let newTodos = todos.map(item => {
-      if (item.id === id) {
-        return { ...item, isCompleted: !item.isCompleted }
-      }
-      return item
-    })
-    setTodos(newTodos)
-  }
+    let saved = JSON.parse(localStorage.getItem("todos"));
+    if (saved) {
+      setTodos(saved);
+    }
+  }, []);
 
   const handelChange = (e) => {
     setCompleted(!completed)
   }
+
+  const add = () => {
+    if (!todo.trim()) return;
+    const newTodos = [...todos, { id: uuidv4(), todo, isCompleted: false }]
+    setTodos(newTodos)
+    setTodo("")
+    saveToLS(newTodos)
+  }
+
+  const deleteEvent = (_, id) => {
+    let newtodos = todos.filter(item => {
+      return item.id !== id;
+    });
+    setTodos(newtodos)
+    saveToLS(newtodos)
+  }
+
+  const editEvent = (_, id) => {
+    let edit = todos.filter(item => {
+      return item.id === id;
+    })
+    deleteEvent(edit, id)
+    setTodo(edit[0].todo)
+    saveToLS(edit)
+  }
+
+  const done = (id) => {
+    let index = todos.findIndex(item => item.id === id);
+    let newTodos = [...todos];
+    newTodos[index].isCompleted = !newTodos[index].isCompleted;
+    setTodos(newTodos);
+    saveToLS(newTodos);
+  };
 
   return (
     <>
@@ -79,29 +81,31 @@ function App() {
           </div>
           {
             todos.length === 0 ? (<div className='text-center text-gray-400 mt-5'>No Tasks</div>) :
-              todos.map((item, id) => {
-                return (
-                  <div key={id}>
-                    <div className='flex items-center'>
-                      <div>
-                        <label htmlFor="show"></label>
-                        <input type="checkbox" name="show" id="shownot" onChange={(e) => isCompleted(e, item.id)} checked={item.isCompleted} />
-                      </div>
+              (todos.filter(item => completed ? item.isCompleted : true)
+                .map((item, id) => {
+                  return (
+                    <div key={id}>
+                      <div className='flex items-center'>
+                        <div>
+                          <label htmlFor="show"></label>
+                          <input type="checkbox" id=" " onChange={() => done(item.id)} checked={item.isCompleted} />
+                        </div>
 
-                      <div className='flex justify-between items-center w-full'>
+                        <div className='flex justify-between items-center w-full'>
 
-                        <div>{item.todo}</div>
+                          <div className={item.isCompleted ? "line-through" : ""}>{item.todo}</div>
 
-                        <div className='flex gap-2 mt-2'>
-                          <button className='border button bg-gray-200 font-bold p-2 rounded-[10px]' onClick={(e) => editEvent(e, item.id)}><FaEdit /></button>
-                          <button className='border button bg-gray-200 font-bold p-2 rounded-[10px]' onClick={(e) => deleteEvent(e, item.id)}><AiFillDelete /></button>
+                          <div className='flex gap-2 mt-2'>
+                            <button className='border button bg-gray-200 font-bold p-2 rounded-[10px]' onClick={(e) => editEvent(e, item.id)}><FaEdit /></button>
+                            <button className='border button bg-gray-200 font-bold p-2 rounded-[10px]' onClick={(e) => deleteEvent(e, item.id)}><AiFillDelete /></button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )
-              })
-          }
+                  )
+
+                })
+              )}
         </div >
       </div>
       <Footer />
